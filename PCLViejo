@@ -1,0 +1,2397 @@
+Private text1 As String
+Private text2 As String
+ 
+Private desdef As Date      ' variable auxiliar para remplazo de celdas - desde cual
+Private hastaf As Date      ' variable auxiliar para remplazo de celdas - hasta cual
+Private textf As String     ' variable auxiliar para remplazo de celdas - texto a poner
+
+Private resultado As String
+Private todosono            ' para el box de consulta por si imprime realizadas o pendientes
+
+Private cuanaud As String   ' variable para contar cuantas audiencias pendientes faltan o cuantas hechas.
+Public cuanaudx As Integer   ' variable para contar cuantas audiencias se filtran
+
+Private nomgar1
+Private nomgar2
+Private nomgar3
+Private nomgar4
+Private nomgar5
+Private nomgar6
+Private nomgar7
+Private nomgar8
+
+Private numexp As String ' variable para pedir el numero de expediente
+
+Private lamas
+Private moreno
+Private cervantes
+Private nallim
+Private quiroga
+Private volante
+Private cornejo
+Private chanchorra
+Private Sin
+
+Dim dte As Date    ' variable para componer fecha con CDate()
+Dim nrofila As Integer ' variable para cargar fila actual
+Dim nrocolu As Integer ' variable para cargar columna actual
+Dim Cualboga As Variant ' para el combobox de la lista de abogados
+
+' Private cualcelda As String 'nombre de la celda para referencia
+
+Private aniox As String
+Private mesx As String
+Private diax As String
+' Private fechin As String
+
+'nombres de archivo segun juzgado
+Public nomtodos As String
+Public nompuertas As String
+Public nomcolombo As String
+Public nompastrana As String
+Public nomrodriguez As String
+Public nomzunino As String
+Public nomespeche As String
+Public nomzerdan As String
+'
+Private libro As String
+Private tipoprot As String
+Public ultima As String
+
+Private desde As String
+Public desdex As Integer
+
+Private JuzGar As String
+
+'
+Private hojao As String
+Private celdao As String
+Private hojad As String
+Private celdad As String
+'
+Private celdaL1 As String
+
+Public ultec            ' para nombre del ultimo técnico
+Public coltec           ' para numero de orden del ultimo técnico
+Public ultasis          ' para nombre del ultimo asistente a la víctima
+Public coltasis         ' para numero de orden del ultimo asistente a la víctima
+Public ultNot           ' para nombre del ultimo notificador
+Public colnot           ' para numero de orden del ultimo notificador
+
+' ultima columna visible en la planilla - actualiza todos los procedimientos y funciones
+Public ucvisib As String
+
+'agregando sorteo variables --------------------------------------
+Private ultimoT As String
+Private ultimoN As String
+Private ultimoV As String
+Private sorteoFechaIni As String
+Private sorteoFechaFin As String
+Private audiencias As Range
+Dim i As Integer
+
+'Variables implementacion licencias
+Dim auxDias As Double
+Dim auxDiaIni As Date
+Dim auxDiaFin As Date
+Dim rgHoliDays As Range
+Dim juz As Integer
+Dim ij As Integer
+Dim ultColJuez As Integer
+Dim ultColOFIJU As Integer
+
+
+
+Dim CuadroTexto As Shape
+
+Sub mostrarv()
+    MsgBox (ultima)
+End Sub
+
+Sub Filtrarpordia()    ' para ver solamente las audiencias de un dia determinado
+    On Error Resume Next
+    Application.ScreenUpdating = False
+    dte = Date
+    cadenaf = " "
+    dte = InputBox("Ingrese fecha: (formato dd/mm/aaaa")
+    Call SacarFiltro
+    ' ultimaf    ' 12-06-2023
+    Range("$P$1").Select
+    ActiveCell.FormulaR1C1 = dte
+    Range("A2:" & ucvisib & ultima).Select
+    Selection.AutoFilter
+    ' ActiveSheet.Range("$A$2:$R$" & ultima).AutoFilter Field:=16, Criteria1:="DIASOL"
+    ActiveSheet.Range("A2:" & ucvisib & ultima).AutoFilter Field:=16, Criteria1:="DIASOL"
+    Application.ScreenUpdating = True
+    'Call KCtrlH
+End Sub
+
+Sub PorEncargado()      ' para ver solamente las audiencias de uno de los encargados internos de OFIJU - se usa junto con el listbox
+    Call SacarFiltro
+    ' ultimaf ' 12-06-2023
+    ' Call lastcol ' 13-06-2023
+       
+    ActiveSheet.Range("A2:" & ucvisib & ultima).AutoFilter Field:=7, Criteria1:=Range("J1").Value
+    Range("A" & ultima).Select
+End Sub
+
+Sub PorEstadistica()    ' para ver las audiencias según la columna estadisticas - se usa junto con el listbox
+    Call SacarFiltro
+    ' ultimaf ' 12-06-2023
+    ' Call lastcol ' 13-06-2023
+    ActiveSheet.Range("A2:" & ucvisib & ultima).AutoFilter Field:=17, Criteria1:=Range("K1").Value
+    Range("A" & ultima).Select
+End Sub
+
+Sub armarfecha() ' para armar el nombre de archivo en las consultas pdf de expedientes segun juzgado que realiza la audiencia
+    diax = InputBox("Ingrese día (para el nombre del archivo): ")
+    mesx = InputBox("Ingrese mes (para el nombre del archivo): ")
+    anox = InputBox("Ingrese año (para el nombre del archivo): ")
+    
+    nomtodos = " "
+    nompuertas = " "
+    nomcolombo = " "
+    nompastrana = " "
+    nomrodriguez = " "
+    nomzunino = " "
+    nomespeche = " "
+    nomzerdan = " "
+     
+    nomtodos = "\\scompar\Compartido - OFIJUZ\informes\todos" & "-" & diax & "-" & mesx & "-" & anox & ".pdf"
+    nompuertas = "\\scompar\Compartido - OFIJUZ\informes\Dra Puertas" & "-" & diax & "-" & mesx & "-" & anox & ".pdf"
+    nomcolombo = "\\scompar\Compartido - OFIJUZ\informes\Dr Colombo" & "-" & diax & "-" & mesx & "-" & anox & ".pdf"
+    nompastrana = "\\scompar\Compartido - OFIJUZ\informes\Dr Pastrana" & "-" & diax & "-" & mesx & "-" & anox & ".pdf"
+    nomrodriguez = "\\scompar\Compartido - OFIJUZ\informes\Dr Rodriguez" & "-" & diax & "-" & mesx & "-" & anox & ".pdf"
+    nomzunino = "\\scompar\Compartido - OFIJUZ\informes\Dra Zunino" & "-" & diax & "-" & mesx & "-" & anox & ".pdf"
+    nomespeche = "\\scompar\Compartido - OFIJUZ\informes\Dra Espeche" & "-" & diax & "-" & mesx & "-" & anox & ".pdf"
+    nomzerdan = "\\scompar\Compartido - OFIJUZ\informes\Dr Zerdan" & "-" & diax & "-" & mesx & "-" & anox & ".pdf"
+
+End Sub
+
+Sub armarfecha2()   ' para armar el nombre de archivo en las consultas pdf de expedientes segun juzgado de origen
+    nomgar1 = " "
+    nomgar2 = " "
+    nomgar3 = " "
+    nomgar4 = " "
+    nomgar5 = " "
+    nomgar6 = " "
+    nomgar7 = " "
+    nomgar8 = " "
+        
+    ' ya agregué los 8 GAR
+    nomgar1 = "\\scompar\Compartido - OFIJUZ\informes\OriGAR1" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+    nomgar2 = "\\scompar\Compartido - OFIJUZ\informes\OriGAR2" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+    nomgar3 = "\\scompar\Compartido - OFIJUZ\informes\OriGAR3" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+    nomgar4 = "\\scompar\Compartido - OFIJUZ\informes\OriGAR4" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+    nomgar5 = "\\scompar\Compartido - OFIJUZ\informes\OriGAR5" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+    nomgar6 = "\\scompar\Compartido - OFIJUZ\informes\OriGAR6" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+    nomgar7 = "\\scompar\Compartido - OFIJUZ\informes\OriGAR7" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+    nomgar8 = "\\scompar\Compartido - OFIJUZ\informes\OriGAR8" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+End Sub
+
+Function ultimaf()
+    ' Letra de la última columna con datos de toda la planilla
+    ucvisib = "AC"
+    ' devuelve al valor de la última fila de la planilla que contiene datos
+    ultima = 0
+    Workbooks("PLCGar.xlsm").Worksheets("EXPEDIENTES").Activate
+    Range("A3").Select
+    ultima = Range("A" & Rows.Count).End(xlUp).Row
+    Range("$A$1").Value = ultima - 2
+    Range("A3").Select
+End Function
+
+Sub IrAUltima()
+    'va a la ultima fila de la planilla
+  
+    Call MostrarTodas
+       
+    Range("A" & ultima).Select
+End Sub
+
+Sub Ultimamas1()
+    
+    Application.ScreenUpdating = False
+
+    ' agrega un registro
+    Call MostrarTodas
+    Call ultimaf
+    ultima = ultima + 1
+    
+    ' pone el numero de orden que sigue en la lista
+    Range("$A" & ultima).Value = ultima - 2
+      
+    ' inserta validación de datos en la columna G
+    Range("G3").Copy
+    Range("$G" & ultima).PasteSpecial xlPasteValidation
+    
+    Application.CutCopyMode = False
+              
+    ' inserta validación de datos en la columna J
+    Range("J3").Copy
+    Range("$J" & ultima).PasteSpecial xlPasteValidation
+    
+    Application.CutCopyMode = False
+                    
+    ' Columna de búsqueda de sala de audiencia
+    Range("K3").Copy
+    Range("$K" & ultima).PasteSpecial xlPasteFormulas
+    Application.CutCopyMode = False
+    
+    ' columnas l y m, lista desplegable de fiscalia y defensa
+    Range("$L$3:$M$3").Select
+    Selection.Copy
+    Range("$L" & ultima).Select
+    ActiveSheet.Paste
+    Application.CutCopyMode = False
+    
+    Range("$L" & ultima).Select
+    Selection.ClearContents
+    
+    Range("$M" & ultima).Select
+    Selection.ClearContents
+              
+    ' columnas o y p (ocultas) que llevan la cuenta de si la audiencia esta hecha (segun si tiene fecha de hoy o no) y si es una fecha solicitada por la consulta según fecha
+    Range("$O$3:$P$3").Select
+    Selection.Copy
+    Range("$O" & ultima).Select
+    ActiveSheet.Paste
+    Application.CutCopyMode = False
+        
+    ' columna t (oculta) para botón de interno de la ofiju (SI o NO)
+    Range("$T$3").Select
+    Selection.Copy
+    Range("$T" & ultima).Select
+    ActiveSheet.Paste
+    Application.CutCopyMode = False
+    
+    ' agrega el guion a la columna Q cuando se agrega un registro
+    Range("$Q$" & ultima).Value = " _"
+       
+    'agrega columna R con su formula
+    Range("R3").Select
+    Selection.Copy
+    Range("$R" & ultima).Select
+    ActiveSheet.Paste
+    Application.CutCopyMode = False
+    
+    ''agrega columna AC con su formula - es para validar asignacion de sorteo de sector víctimas - agregar técnicos y notificaciones
+    'Range("AC3").Select
+    'Selection.Copy
+    'Range("$AC" & ultima).Select
+    'ActiveSheet.Paste
+    'Application.CutCopyMode = False
+    
+    ' recuadrar todo
+    Range("A" & ultima & ":" & ucvisib & ultima).Select
+    With Selection.Interior
+        .Pattern = xlNone
+        .TintAndShade = 0
+        .PatternTintAndShade = 0
+    End With
+    
+    Selection.Borders(xlDiagonalDown).LineStyle = xlNone
+    Selection.Borders(xlDiagonalUp).LineStyle = xlNone
+        
+    With Selection.Borders(xlEdgeLeft)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeBottom)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeRight)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlInsideVertical)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlInsideHorizontal)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    
+            
+    ' inserta formato condicionalcolumna D (para duplicidad)
+       
+'     Range("D815:D" & ultima).Select
+'    Selection.FormatConditions.AddUniqueValues
+'    Selection.FormatConditions(Selection.FormatConditions.Count).SetFirstPriority
+'    Selection.FormatConditions(1).DupeUnique = xlDuplicate
+'    With Selection.FormatConditions(1).Font
+'        .Color = -16383844
+'        .TintAndShade = 0
+'    End With
+'    With Selection.FormatConditions(1).Interior
+'        .PatternColorIndex = xlAutomatic
+'        .Color = 13551615
+'        .TintAndShade = 0
+'    End With
+'    Selection.FormatConditions(1).StopIfTrue = False
+   
+    
+    
+    Application.ScreenUpdating = True
+        
+    Range("A" & ultima).Select
+    Selection.RowHeight = 40
+        
+      
+End Sub
+
+Sub OrdFecCarga()
+    ' Ordena segun el numero de orden de la columna A
+    ' Call ultimaf          ' 12-06-2023
+    
+    Application.StatusBar = "DATOS ORDENADOS SEGUN EL ORDEN DE LA CARGA DE DATOS"
+    Application.ScreenUpdating = False
+    Call MostrarTodas
+    Cells.Select
+    ActiveWorkbook.Worksheets("EXPEDIENTES").Sort.SortFields.Clear
+    
+    ActiveWorkbook.Worksheets("EXPEDIENTES").Sort.SortFields.Add Key:=Range("A3:A" & ultima), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+    
+    With ActiveWorkbook.Worksheets("EXPEDIENTES").Sort
+        .SetRange Range("A3:" & ucvisib & ultima)
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    
+    Application.ScreenUpdating = True
+    
+    Range("A" & ultima).Select
+            
+End Sub
+
+Sub MostrarTodas()
+    ' Para volver la planilla a visualización de datos completos
+    
+    Application.ScreenUpdating = False
+    
+    Call SacarFiltro
+    Call ultimaf            ' 12-06-2023
+    Cells.Select
+    Selection.EntireColumn.Hidden = False
+    Selection.EntireRow.Hidden = False
+   
+    Call OcultarOP
+    Call OcultarTV
+    
+    Application.ScreenUpdating = True
+                  
+    Range("A" & ultima).Select
+        
+End Sub
+
+Sub MostrarHechas()
+    ' Mostrar audiencias realizadas
+      
+    Application.ScreenUpdating = False
+      
+    Call SacarFiltro
+    ' Call ultimaf       ' 12-06-2023
+    
+    Range("A2:" & ucvisib & ultima).Select
+    Selection.AutoFilter
+    ActiveSheet.Range("A$2:" & ucvisib & ultima).AutoFilter Field:=15, Criteria1:="SI"
+    
+    Call OcultarABC
+    
+    Application.ScreenUpdating = True
+    
+    Range("A" & ultima).Select
+        
+End Sub
+
+Sub MostrarPendientes()
+    ' Muestra audiencias pendientes de realizaciòn - incluye desde el día siguiente a la fecha
+    
+    Application.ScreenUpdating = False
+    
+    Call SacarFiltro
+    ' Call ultimaf     ' 12-06-2023
+    Range("A2:" & ucvisib & ultima).AutoFilter
+    ActiveSheet.Range("$A$2:$" & ucvisib & ultima).AutoFilter Field:=15, Criteria1:="NO"
+    
+    Application.ScreenUpdating = True
+    
+    Range("A" & ultima).Select
+  
+End Sub
+
+Sub SacarFiltro()
+    ' Elimina los filtros de la planilla.-
+    
+    'ver de reemplazar por ucvisib
+    Range("A2:" & ucvisib & "2").AutoFilter
+    '   Call ultimaf  'actualizar Q1 (contador auxiliar de cantidad de registros) ' 12-06-2023
+        
+End Sub
+
+Sub OcultarABC()
+    ' Oculta las primeras tres columnas de la planilla
+    Range("A:A,B:B,C:C").EntireColumn.Hidden = True
+           
+    ' Call ultimaf  'actualizar Q1 (contador auxiliar de cantidad de registros)   ' 12-06-2023
+End Sub
+
+Sub OcultarOP()
+    ' Oculta las columnas O y P que contienen fórmulas
+    Range("O:O,P:P").EntireColumn.Hidden = True
+    
+    '  Call ultimaf  '25/04/2023 para actualizar Q1 (contador auxiliar de cantidad de registros)   ' 12-06-2023
+
+End Sub
+
+Sub OrigenGAR()
+    ' Imprime PDF de juicios originados segun juzgado de origen - pide Nº de juzgado, pregunta si se incluyen audiencias ya realizadas y pide fecha el nombre del archivo
+
+    Application.ScreenUpdating = False
+
+    nomgar1 = " "
+    nomgar2 = " "
+    nomgar3 = " "
+    nomgar4 = " "
+    nomgar5 = " "
+    nomgar6 = " "
+    nomgar7 = " "
+    nomgar8 = " "
+
+    todosono = " "
+    todosono = InputBox("¿Incluye todas las Audiencias ya realizadas? (S/N):", , "S")
+    
+    Call MostrarTodas
+
+    ' Ordena según fecha y hora
+    Call OrdFecHor
+    '
+    If todosono = "N" Or todosono = "n" Then
+        Call MostrarPendientes
+    End If
+    '
+    '  Call ultimaf                   ' 12-06-2023
+    Call armarfecha2
+    '
+    celdaL1 = 0
+    celdaL1 = Range("$L$1").Value
+    '
+    ActiveSheet.Range("A2:" & ucvisib & ultima).AutoFilter Field:=6, Criteria1:=celdaL1
+    '
+    ' ChDir "\\scompar\Compartido - OFIJUZ\informes"
+    
+    ' esconde Columnas A, B, C - fila 1 y columnas R a Y
+    Call OcultarABC
+    Call OcFila1
+    Call OcultarRY
+        
+    If celdaL1 = 1 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar1, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+
+    If celdaL1 = 2 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar2, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+
+    If celdaL1 = 3 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar3, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+
+    If celdaL1 = 4 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar4, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+
+    If celdaL1 = 5 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar5, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+
+    If celdaL1 = 6 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar6, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+
+    If celdaL1 = 7 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar7, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+
+    If celdaL1 = 8 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar8, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+
+    ' muestra fila 1 y columnas R a Y
+    Call VerFila1
+    Call MostrarRY
+    '
+    Call MostrarTodas
+    
+    Application.ScreenUpdating = True
+    
+   ' Range("A" & ultima).Select
+End Sub
+
+Sub Estdia()
+    ' listador de la estadistica diaria -> 1) audiencias pendientes GAR 2, 3, 4,8 y todos  (listo)  - 2) originales por juzgado GAR  (falta)
+    
+    Application.ScreenUpdating = False
+    
+'    nomtodos = " "
+'    nompuertas = " "
+'    nomcolombo = " "
+'    nompastrana = " "
+'    nomrodriguez = " "
+'    nomzunino = " "
+'    nomespeche = " "
+'    nomzerdan = " "
+'    nommontoya = " "
+'    nomtroyano = " "
+'    nommascarello = " "
+    
+  'codigo anterior --------------------------------------------------------------------------
+  
+  
+  
+  
+'    juzOri = 1  ' Genera los listados en pdf de pendientes para Garantías 1, 2, 3, 4, 6,7, 8 y los de Dra. Montoya - Dr. Troyano - Dr. Mascarello
+'
+'    For juzOri = 1 To 12
+'        Call MostrarTodas
+'        Call OcultarABC
+'        Call OcFila1
+'        Call OcultarRY
+'        Call OrdFecHor
+'        Call MostrarPendientes
+'
+'
+'
+'        Select Case juzOri
+'            Case 1
+'                juzOri = "Dra. Zunino"  'Genera PDF Dra. Zunino - GARANTIAS 1
+'                nomzunino = "\\scompar\Compartido - OFIJUZ\informes\Dra Zunino" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+'                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+'                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomzunino, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+'                juzOri = 1
+'
+'            Case 2
+'                juzOri = "Dr. Colombo"  'Genera PDF Dr. Colombo - GARANTIAS 2
+'                nomcolombo = "\\scompar\Compartido - OFIJUZ\informes\Dr Colombo" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+'                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+'                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomcolombo, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+'                juzOri = 2
+'
+'            Case 3
+'                juzOri = "Dr. Pastrana"  'Genera PDF Dr. Pastrana - GARANTIAS 3
+'                nompastrana = "\\scompar\Compartido - OFIJUZ\informes\Dr Pastrana" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+'                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+'                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nompastrana, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+'                juzOri = 3
+'            Case 4
+'                juzOri = "Dr. Rodriguez Pipino"  'Genera PDF Dr. Rodriguez Pipino - GARANTIAS 4
+'                nomrodriguez = "\\scompar\Compartido - OFIJUZ\informes\Dr Rodriguez" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+'                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+'                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomrodriguez, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+'                juzOri = 4
+'            Case 6
+'                juzOri = "Dra. Espeche"   'Genera PDF Dra. Especha - GARANTIAS 6
+'                nomespeche = "\\scompar\Compartido - OFIJUZ\informes\Dra Espeche" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+'                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+'                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomespeche, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+'                juzOri = 6
+'            Case 7
+'                juzOri = "Dr. Zerdan"    ' Genera PDF Dr. Zerdan - GARANTIAS 7
+'                nomzerdan = "\\scompar\Compartido - OFIJUZ\informes\Dr Zerdan" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+'                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+'                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomzerdan, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+'                juzOri = 7
+'            Case 8
+'                juzOri = "Dra. Puertas"   ' Genera PDF  Dra. Puertas - GARANTIAS 8
+'                nompuertas = "\\scompar\Compartido - OFIJUZ\informes\Dra Puertas" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+'                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+'                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nompuertas, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+'                juzOri = 8
+'            Case 9
+'                juzOri = "Dra. Flores Toranzos"   ' Genera PDF  Dra. Toranzos
+'                nommontoya = "\\scompar\Compartido - OFIJUZ\informes\Dra Toranzos" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+'                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+'                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nommontoya, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+'                juzOri = 9
+'            Case 10
+'                juzOri = "Dr. Javier Aranibar"   ' Genera PDF  Dr. Aranibar
+'                nomtroyano = "\\scompar\Compartido - OFIJUZ\informes\Dr Aranibar" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+'                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+'                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomtroyano, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+'                juzOri = 10
+'            Case 11
+'                juzOri = "Dr. Leonardo Feans"   ' Genera PDF  Dr. Feans
+'                nommascarello = "\\scompar\Compartido - OFIJUZ\informes\Dr Feans" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+'                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+'                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nommascarello, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+'                juzOri = 11
+'            Case 12 'este Case Genera el listado en PDF de Pendientes para todos
+'                nomtodos = "\\scompar\Compartido - OFIJUZ\informes\todos" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+'                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomtodos, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+'
+'       End Select
+'
+'    Next juzOri
+        
+        
+        
+        
+        
+   'FIN CODIGO ANTERIOR--------------------------------------------------
+           
+           
+           
+           
+    Dim NombreArchivo, Separador, RutaArchivo
+    Dim bakCarpeta1, bakCarpeta2, Ruta1, Ruta2
+
+    NombreArchivo = Application.ThisWorkbook.Name
+    Separador = Application.PathSeparator
+    RutaArchivo = "\\scompar\Compartido - OFIJUZ\informes"
+
+    bakCarpeta1 = "InformesDiarios_"
+    bakCarpeta2 = VBA.Format(VBA.Now, "dd-mm-yyyy-hh-mm-ss")
+
+    Ruta1 = RutaArchivo & Separador & bakCarpeta1
+    Ruta2 = RutaArchivo & Separador & bakCarpeta1 & Separador & bakCarpeta2
+
+    If Dir(Ruta1, vbDirectory) <> Empty Then
+        'Carpeta existe
+        VBA.MkDir (Ruta2)
+    Else
+        'Carpeta no existe
+        VBA.MkDir (Ruta1)
+        VBA.MkDir (Ruta2)
+    End If
+
+    'Application.ThisWorkbook.SaveCopyAs Ruta2
+    
+    
+      
+    juzOri = 1  ' Genera los listados en pdf de pendientes para Garantías 1, 2, 3, 4, 6,7, 8 y los de Dra. Montoya - Dr. Troyano - Dr. Mascarello
+    
+    For juzOri = 1 To 12
+        Call MostrarTodas
+        Call OcultarABC
+        Call OcFila1
+        Call OcultarRY
+        Call OrdFecHor
+        Call MostrarPendientes
+        
+                        
+        
+        Select Case juzOri
+            Case 1
+                juzOri = "Dra. Zunino"  'Genera PDF Dra. Zunino - GARANTIAS 1
+                nomzunino = Ruta2 & Separador & "Dra Zunino" & ".pdf"
+                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomzunino, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+                juzOri = 1
+          
+            Case 2
+                juzOri = "Dr. Colombo"  'Genera PDF Dr. Colombo - GARANTIAS 2
+                nomcolombo = Ruta2 & Separador & "Dr Colombo" & ".pdf"
+                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomcolombo, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+                juzOri = 2
+            
+            Case 3
+                juzOri = "Dr. Pastrana"  'Genera PDF Dr. Pastrana - GARANTIAS 3
+                nompastrana = Ruta2 & Separador & "Dr Pastrana" & ".pdf"
+                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nompastrana, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+                juzOri = 3
+            Case 4
+                juzOri = "Dr. Rodriguez Pipino"  'Genera PDF Dr. Rodriguez Pipino - GARANTIAS 4
+                nomrodriguez = Ruta2 & Separador & "Dr Rodriguez" & ".pdf"
+                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomrodriguez, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+                juzOri = 4
+            Case 6
+                juzOri = "Dra. Espeche"   'Genera PDF Dra. Especha - GARANTIAS 6
+                nomespeche = Ruta2 & Separador & "Dra Espeche" & ".pdf"
+                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomespeche, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+                juzOri = 6
+            Case 7
+                juzOri = "Dr. Zerdan"    ' Genera PDF Dr. Zerdan - GARANTIAS 7
+                nomzerdan = Ruta2 & Separador & "Dr Zerdan" & ".pdf"
+                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomzerdan, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+                juzOri = 7
+            Case 8
+                juzOri = "Dra. Puertas"   ' Genera PDF  Dra. Puertas - GARANTIAS 8
+                nompuertas = Ruta2 & Separador & "Dra Puertas" & ".pdf"
+                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nompuertas, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+                juzOri = 8
+            Case 9
+                juzOri = "Dra. Flores Toranzos"   ' Genera PDF  Dra. Toranzos
+                nommontoya = Ruta2 & Separador & "Dra Toranzos" & ".pdf"
+                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nommontoya, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+                juzOri = 9
+            Case 10
+                juzOri = "Dr. Javier Aranibar"   ' Genera PDF  Dr. Aranibar
+                nomtroyano = Ruta2 & Separador & "Dr Aranibar" & ".pdf"
+                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomtroyano, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+                juzOri = 10
+            Case 11
+                juzOri = "Dr. Leonardo Feans"   ' Genera PDF  Dr. Feans
+                nommascarello = Ruta2 & Separador & "Dr Feans" & ".pdf"
+                ActiveSheet.Range("$A$2:$" & ucvisib & "$" & ultima).AutoFilter Field:=10, Criteria1:=juzOri
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nommascarello, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+                juzOri = 11
+            Case 12 'este Case Genera el listado en PDF de Pendientes para todos
+                nomtodos = Ruta2 & Separador & "todos" & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+                ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomtodos, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+            
+       End Select
+                      
+    Next juzOri
+           
+           
+           
+           
+           
+           
+           
+           
+           
+    ' muestra fila 1 y columnas R a Y
+    Call VerFila1
+    Call MostrarRY
+    '
+    Call MostrarTodas
+    
+    ' LISTADO SEGUN JUZGADO DE ORIGEN (EL QUE ESTÁ EN TURNO)
+    
+    nomgar1 = " "
+    nomgar2 = " "
+    nomgar3 = " "
+    nomgar4 = " "
+    nomgar5 = " "
+    nomgar6 = " "
+    nomgar7 = " "
+    nomgar8 = " "
+    
+    todosono = " "
+    todosono = InputBox("¿Incluye todas las Audiencias ya realizadas? (S/N):")
+    
+    If todosono = " " Then
+    Exit Sub
+    End If
+    
+    Exit Sub
+    
+    
+    '
+    Call MostrarTodas           ' ver toda la planilla completa
+    Call OrdFecHor              ' ordena por fecha y horar
+   
+    Call armarfecha2
+    '
+    celdaL1 = 0
+    celdaL1 = InputBox("JUZGADO de GARANTÍAS en TURNO")
+    '
+    ActiveSheet.Range("A2:" & ucvisib & ultima).AutoFilter Field:=6, Criteria1:=celdaL1
+    ' esconde Columnas A, B, C - fila 1 y columnas R a Y
+    Call OcultarABC
+    Call OcFila1
+    Call OcultarRY
+   
+    If celdaL1 = 1 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar1, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    If celdaL1 = 2 Then
+       ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar2, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+   End If
+    If celdaL1 = 3 Then
+       ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar3, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+   End If
+    If celdaL1 = 4 Then
+       ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar4, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+   End If
+   If celdaL1 = 5 Then
+       ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar5, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+   End If
+   If celdaL1 = 6 Then
+       ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar6, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+   End If
+   If celdaL1 = 7 Then
+       ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar7, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+   End If
+   If celdaL1 = 8 Then
+       ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomgar8, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+   End If
+   ' muestra fila 1 y columnas R a Y
+   Call VerFila1
+   Call MostrarRY
+   '
+   Call MostrarTodas
+   
+   Application.ScreenUpdating = True
+   
+   Range("A" & ultima).Select
+    
+End Sub
+
+
+Sub AsignadosGAR()
+    ' Imprime PDF de juicios segun el juzgado interviniente - pregunta si se incluyen audiencias ya realizadas, pide la fecha para componer el nombre del archivo.-
+    
+    Application.ScreenUpdating = False
+    
+    nomtodos = " "
+    nompuertas = " "
+    nomcolombo = " "
+    nompastrana = " "
+    nomrodriguez = " "
+    nomzunino = " "
+    nomespeche = " "
+    nomzerdan = " "
+      
+    todosono = " "
+    todosono = InputBox("¿Incluye todas las Audiencias ya realizadas? (S/N):")
+    
+    juzOri = 0
+    juzOri = InputBox("Ingrese el Juzgado Interviniente que desea (9 para imprimir TODOS): ")
+    
+    Call MostrarTodas
+    Call OcultarABC
+    
+    ' esconde fila 1 y columnas R a Y
+    Call OcFila1
+    Call OcultarRY
+    '
+    Call OrdFecHor          ' ordena por fecha y hora
+    '
+    If todosono = "N" Or todosono = "n" Then
+        Call MostrarPendientes
+    End If
+    
+    Call armarfecha
+    
+    If juzOri <> 9 Then
+        ActiveSheet.Range("$A$2:$Q$" & ultima).AutoFilter Field:=11, Criteria1:=juzOri
+    End If
+        
+    ChDir "\\scompar\Compartido - OFIJUZ\informes"
+            
+    If juzOri = 1 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomzunino, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    If juzOri = 2 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomcolombo, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    If juzOri = 3 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nompastrana, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    If juzOri = 4 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomrodriguez, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    If juzOri = 6 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomespeche, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+            
+    If juzOri = 7 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomzerdan, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    If juzOri = 8 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nompuertas, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    If juzOri = 9 Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomtodos, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    ' muestra fila 1 y columnas R a Y
+    Call VerFila1
+    Call MostrarRY
+    '
+    Call MostrarTodas
+    
+    Application.ScreenUpdating = True
+            
+End Sub
+
+Sub Internos()
+    ' Imprime PDF de juicios segun el funcionario interno - pregunta si se incluyen audiencias ya realizadas, pide la fecha para componer el nombre del archivo.-
+    
+    ' Call ultimaf             ' 12-06-2023
+        
+    lamas = "lamas.pdf"
+    moreno = "moreno.pdf"
+    cervantes = "cervantes.pdf "
+    nallim = "nallim.pdf"
+    quiroga = "quiroga.pdf"
+    volante = "volante.pdf "
+    cornejo = "cornejo.pdf"
+    chanchorra = "chanchorra.pdf"
+    Sin = "sinasignar.pdf"
+
+    todosono = " "
+    todosono = InputBox("¿Incluye todas las Audiencias ya realizadas? (S/N):")
+    
+    MsgBox ("opciones: Dra. Lamas  -  Dr. Moreno  -  Dr. Cervantes  -  Dra. Nallim  -  Dr. Quiroga  -  Dra. Volante (Dr.Robbio)  -  Dr. Cornejo  -  Dra. Chanchorra  -  Sin asignar")
+        
+    funcionario = " "
+    funcionario = InputBox("Ingrese el funcionario Interviniente que desea: ")
+    
+    Call MostrarTodas
+    Call OcultarABC
+    
+    ' esconde fila 1 y columnas R a Y
+    Call OcFila1
+    Call OcultarRY
+    '
+    
+    Call OrdFecHor
+    
+     If todosono = "N" Or todosono = "n" Then
+        Call MostrarPendientes
+    End If
+    
+    ' Call ultimaf     ' 12-06-2023
+        
+    ChDir "\\scompar\Compartido - OFIJUZ\informes"
+                
+    ActiveSheet.Range("$A$2:$Q$" & ultima).AutoFilter Field:=7, Criteria1:=funcionario
+       
+    If funcionario = "Dra. Lamas" Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=lamas, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    If funcionario = "Dr. Moreno" Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=moreno, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    If funcionario = "Dr. Cervantes" Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=cervantes, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    If funcionario = "Dra. Nallim" Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nallim, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    If funcionario = "Dr. Quiroga" Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=quiroga, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    If funcionario = "Dra. Volante (Dr.Robbio)" Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=volante, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    If funcionario = "Dr. Cornejo" Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=cornejo, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    If funcionario = "Dra. Chanchorra" Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=chanchorra, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    If funcionario = "Sin" Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=Sin, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    End If
+    
+    ' muestra fila 1 y columnas R a Y
+    Call VerFila1
+    Call MostrarRY
+    '
+    Call MostrarTodas
+    
+    Range("A" & ultima).Select
+            
+End Sub
+
+Sub OrdFecHor()
+    ' Ordena los datos por fecha y hora
+    
+    Application.StatusBar = "DATOS ORDENADOS SEGUN FECHA Y HORA DE LA AUDIENCIA PROGRAMADA"
+    
+    ActiveWorkbook.Worksheets("EXPEDIENTES").Sort.SortFields.Clear
+    
+    ActiveWorkbook.Worksheets("EXPEDIENTES").Sort.SortFields.Add Key:=Range("H3:H" & ultima), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+    ActiveWorkbook.Worksheets("EXPEDIENTES").Sort.SortFields.Add Key:=Range("I3:I" & ultima), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+           
+    With ActiveWorkbook.Worksheets("EXPEDIENTES").Sort
+        .SetRange Range("A2:" & ucvisib & ultima)
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    
+    Range("A" & ultima).Select
+
+End Sub
+
+Sub OrdNumExp()
+    ' ordena por numero de expediente
+          
+    cualcelda = " "
+    ActiveWorkbook.Worksheets("EXPEDIENTES").Sort.SortFields.Clear
+    ActiveWorkbook.Worksheets("EXPEDIENTES").Sort.SortFields.Add Key:=Range("D2:D" & ultima), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+    With ActiveWorkbook.Worksheets("EXPEDIENTES").Sort
+        .SetRange Range("D2:D" & ultima)
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    
+End Sub
+
+Sub BlinkC()
+    ' hace parpadear en negritas una celda en especial
+    
+    On Error Resume Next
+    contb = 0
+    For contb = 0 To 5
+        conta = 0
+        For conta = 0 To 150
+            Selection.Font.Bold = True   ' pone negritas
+        Next conta
+    
+        conta = 0
+        For conta = 0 To 150
+            Selection.Font.Bold = False  ' saca negritas
+        Next conta
+    Next contb
+End Sub
+
+Sub BuscarExp()
+    ' Busca un texto o número de expediente
+    On Error Resume Next
+    numexp = 0
+    Call SacarFiltro
+    numexp = 0
+    numexp = InputBox("Ingrese Expediente o texto buscado: ")
+    Cells.Find(What:=numexp, After:=ActiveCell, LookIn:=xlFormulas, LookAt:=xlPart, SearchOrder:=xlByRows, SearchDirection:=xlNext, MatchCase:=False, SearchFormat:=False).Activate
+    'Call BlinkC
+End Sub
+
+Function comillas(Texto As String) As String
+    comillas = Chr(34) & Texto & Chr(34)
+End Function
+
+Sub AbreImpugnac()
+    ' Abre planilla de la oficina de Impugnaciones
+    
+    Workbooks.Open Filename:= _
+        "\\scompar\Compartido - OFIJUZ\Dr Nieva\impugnacion desa\PLCGar impugnacion.xlsm" _
+        , ReadOnly:=True
+End Sub
+
+
+Sub CerrarSG()
+' Cerrar Sin Grabar
+    Application.DisplayAlerts = False
+    ActiveWorkbook.Close
+    Application.DisplayAlerts = True
+End Sub
+
+Sub KCtrlH()
+' Simula presionar CTRL-HOME
+    SendKeys ("^{HOME}")
+End Sub
+
+Sub DesMarcaPend()
+    ' Pone en blanco la fila cuando ya está sorteada y con los datos completos
+    Call cargafilcol
+    Range("A" & nrofila & ":" & ucvisib & nrofila).Select 'selecciona el área de datos
+    With Selection.Interior
+        .Pattern = xlNone
+        .TintAndShade = 0
+        .PatternTintAndShade = 0
+    End With
+    If Range("AC" & nrofila).Value = "SI" Then
+        Range("D" & nrofila).Select 'selecciona nro expte
+            With Selection.Interior
+            .Pattern = xlSolid
+            .PatternColorIndex = xlAutomatic
+            .Color = RGB(255, 153, 0)
+            .TintAndShade = 0
+            .PatternTintAndShade = 0
+        End With
+    End If
+End Sub
+
+Sub PintaRosa()
+    ' Marca la fila en rosado cuando ya está hecha la audiencia
+    Call cargafilcol
+    Range("A" & nrofila & ":" & ucvisib & nrofila).Select 'selecciona el área de datos
+    With Selection.Interior
+        .Pattern = xlSolid
+        .PatternColorIndex = xlAutomatic
+        .ThemeColor = xlThemeColorAccent2
+        .TintAndShade = 0.599993896298105
+        .PatternTintAndShade = 0
+    End With
+    If Range("AC" & nrofila).Value = "SI" Then
+        Range("D" & nrofila).Select 'selecciona nro expte
+            With Selection.Interior
+            .Pattern = xlSolid
+            .PatternColorIndex = xlAutomatic
+            .Color = RGB(255, 153, 0)
+            .TintAndShade = 0
+            .PatternTintAndShade = 0
+        End With
+    End If
+End Sub
+
+Sub PintaVerde()
+    ' Marca la fila en verde cuando llega el pedido pero no está el expediente en OFIJU-GAR
+    Call cargafilcol
+    Range("$A" & nrofila & ":$" & ucvisib & nrofila).Select         'selecciona el área de datos
+    With Selection.Interior
+        .Pattern = xlSolid
+        .PatternColorIndex = xlAutomatic
+        .Color = 5296274
+        .TintAndShade = 0
+        .PatternTintAndShade = 0
+    End With
+    If Range("AC" & nrofila).Value = "SI" Then
+        Range("D" & nrofila).Select 'selecciona nro expte
+            With Selection.Interior
+            .Pattern = xlSolid
+            .PatternColorIndex = xlAutomatic
+            .Color = RGB(255, 153, 0)
+            .TintAndShade = 0
+            .PatternTintAndShade = 0
+        End With
+    End If
+End Sub
+
+Sub PintAmarillo()
+    ' Marca la fila en amarillo cuando el expediente está en OFIJU-GAR y falta sortear fecha de audiencia (estaba en verde)
+    Call cargafilcol
+    Range("$A" & nrofila & ":$" & ucvisib & nrofila).Select 'selecciona el área de datos
+    With Selection.Interior
+        .Pattern = xlSolid
+        .PatternColorIndex = xlAutomatic
+        .Color = 65535
+        .TintAndShade = 0
+        .PatternTintAndShade = 0
+    End With
+    If Range("AC" & nrofila).Value = "SI" Then
+        Range("D" & nrofila).Select 'selecciona nro expte
+            With Selection.Interior
+            .Pattern = xlSolid
+            .PatternColorIndex = xlAutomatic
+            .Color = RGB(255, 153, 0)
+            .TintAndShade = 0
+            .PatternTintAndShade = 0
+        End With
+    End If
+    
+End Sub
+
+Sub PintAzul()
+    ' Marca la fila en azul cuando el expediente tiene alguna situación especial, como remisión a mesa distribuidora de asesorias
+    Call cargafilcol
+    Range("$A" & nrofila & ":$" & ucvisib & nrofila).Select 'selecciona el área de datos
+    With Selection.Interior
+        .Pattern = xlSolid
+        .PatternColorIndex = xlAutomatic
+        .Color = 12611584
+        .TintAndShade = 0
+        .PatternTintAndShade = 0
+    End With
+    If Range("AC" & nrofila).Value = "SI" Then
+        Range("D" & nrofila).Select 'selecciona nro expte
+            With Selection.Interior
+            .Pattern = xlSolid
+            .PatternColorIndex = xlAutomatic
+            .Color = RGB(255, 153, 0)
+            .TintAndShade = 0
+            .PatternTintAndShade = 0
+        End With
+    End If
+End Sub
+
+Sub PintaRojo()
+    ' Marca la fila en rojo cuando el expediente tiene observaciones o faltan datos...
+    Call cargafilcol
+    Range("$A" & nrofila & ":$" & ucvisib & nrofila).Select 'selecciona el área de datos
+    With Selection.Interior
+        .Pattern = xlSolid
+        .PatternColorIndex = xlAutomatic
+        .Color = 255
+        .TintAndShade = 0
+        .PatternTintAndShade = 0
+    End With
+End Sub
+Sub PintaParaAcu()
+    ' Marca la fila en rosado cuando ya está hecha la audiencia
+    Call cargafilcol
+    Range("D" & nrofila).Select 'selecciona nro expte
+    With Selection.Interior
+        .Pattern = xlSolid
+        .PatternColorIndex = xlAutomatic
+        .Color = RGB(255, 153, 0)
+        .TintAndShade = 0
+        .PatternTintAndShade = 0
+    End With
+    Range("AC" & nrofila).Value = "SI"
+    
+End Sub
+
+
+' Para dejar vacias - ver si puedo convertir a función
+Sub RelColum()
+    For inicio = 161 To 5000
+        Range("$J$" & inicio).Value = " "
+    Next inicio
+End Sub
+
+Sub cargafilcol()
+    nrofila = 0
+    nrocolu = 0
+    nrofila = ActiveCell.Row
+    nrocolu = ActiveCell.Column
+End Sub
+
+Sub OcFila1()    ' oculta fila 1 dejandola con altura de 1
+    Rows("1:1").RowHeight = 1
+End Sub
+
+Sub VerFila1() ' muestra fila 1
+    Rows("1:1").Select
+    Selection.RowHeight = 160
+End Sub
+
+Sub OcultarRY()
+    ' oculta las columnas R a AB de la planilla
+    Range("R:R,S:S,T:T,U:U,V:V").EntireColumn.Hidden = True
+        
+    Range("W:W,X:X,Y:Y,Z:Z,AA:AA,AB:AB").EntireColumn.Hidden = True
+    
+End Sub
+
+Sub OcultarTV()
+    ' oculta las columnas R a Z de la planilla
+    Range("T:T,U:U,V:V").EntireColumn.Hidden = True
+End Sub
+
+Sub MostrarRY()
+    ' muestra las columnas R a Z de la planilla
+    Range("R:R,S:S,T:T,U:U,V:V").Select
+    Selection.EntireColumn.Hidden = False
+    Range("W:W,X:X,Y:Y,Z:Z, AA:AA,AB:AB").Select
+    Selection.EntireColumn.Hidden = False
+End Sub
+
+
+'Sub SortAsis()
+'
+'    'On Error Resume Next
+'    Application.ScreenUpdating = False
+'
+'
+'    cuanaudx = 0
+'    desdex = 1
+'
+'    desdef = Date
+'    hastaf = Date
+'
+'    desdef = InputBox("Sortear desde fecha: ")
+'    hastaf = InputBox("Sortear hasta fecha: ")
+'
+'    Call OrdFecHor
+'    Call SacarFiltro
+'    ultimaf
+'
+'    'coloca fecha desde en Q1 y hasta en R1
+'    Range("$Q$1").Select
+'    ActiveCell.FormulaR1C1 = desdef
+'    Range("$R$1").Select
+'    ActiveCell.FormulaR1C1 = hastaf
+'
+'    ' filtra según coincidencia de la fecha de audiencia >Q1 y <R1
+'    Range("A2:" & ucvisib & ultima).Select
+'    Selection.AutoFilter
+'    ActiveSheet.Range("A2:" & ucvisib & ultima).AutoFilter Field:=29, Criteria1:="SORTEAR"'
+'
+'    ' cuanaudx = "ac3:ac" & ultima, "sortear")
+'
+'    'Range("$S$1").Select
+'    'ActiveCell.FormulaR1C1 = "=COUNTIF(A:A & ultima,""=SORTEAR"")"
+'
+'    cuanaudx = Range("S1").Value
+'
+'
+'    ultec = " "             ' para nombre del ultimo técnico
+'    ultasis = " "           ' para nombre del ultimo asistente a la víctima
+'    ultNot = " "            ' para nombre del ultimo notificador
+'
+'    Workbooks("PLCGar.xlsm").Worksheets("Tecnicos").Activate
+'
+'    ultec = Range("C1").Value
+'    coltec = Range("A1").Value
+'
+'
+'
+'    'For desdex = 1 To cuanaudx
+'
+'        ' declarar variables ulttec, ultasis y ultnot
+'        ' buscar nombre de ultimo tecnico
+'        ' traer valor de celda C1 de tecnicos en variable en ulttec
+'        ' buscar ulttec y tomar numero de columna 1 de planilla tecnicos y dejar en una variable
+'        ' poner en planilla filtrada por dia el primer valor de celda b1 de tecnicos en Z & ultima
+'        ' sumar 1 a variable de
+'
+'
+'
+'
+'
+'
+'
+'
+'        MsgBox (ultec)
+'
+'    'Next desdex
+
+'    Workbooks("PLCGar.xlsm").Worksheets("EXPEDIENTES").Activate
+'
+'
+'
+'End Sub
+
+
+
+'NUEVAS FUNCIONES SORTEO -----------------------------------------------------------------------------
+Sub SorteoTNV()
+    On Error Resume Next
+    sorteoFechaIni = InputBox("SORTEAR dìa: (formato dd/mm/aaaa")
+    Dim res As String
+    res = InputBox("SORTEAR ASITENCIA A LA VICTIMA?: (S/N)")
+    'sorteoFechaFin = InputBox("SORTEAR desde: (formato dd/mm/aaaa")
+    'Filtramos para tener todas las audiencias de la fecha elegida
+    Call SacarFiltro
+    Range("A2:" & ucvisib & ultima).Select
+    Selection.AutoFilter
+    ActiveSheet.Range("$A$2:$" & ucvisib & ultima).AutoFilter Field:=8, Criteria1:=sorteoFechaIni
+    ActiveSheet.Range
+    Dim celda As Range, rng As Range
+    Set rng = ActiveSheet.Range("$A$3:$A" & ultima)
+    Call asignarTecNotAsi(rng, sorteoFechaIni, res)
+    Call MostrarTodas
+    Call OrdFecHor
+End Sub
+
+Sub asignarTecNotAsi(rng As Range, fech As String, respuesta As String)
+    Dim ultTec As Integer
+    Dim ultNot As Integer
+    Dim ultAsi As Integer
+    ultTec = Worksheets("Personal").Range("B3").Value 'Posicion ultimo tecnico sorteado
+    ultNot = Worksheets("Personal").Range("H3").Value 'Posicion ultimo notificador sorteado
+    ultAsi = Worksheets("Personal").Range("E3").Value 'Posicion ultimo asistente sorteado
+    
+    For Each celda In rng
+        If celda.EntireRow.Hidden = False Then
+            If ultTec = 6 Then 'si termino la lista de tecnicos vuelve a empezar
+                ultTec = 1
+            End If
+            If ultNot = 6 Then 'si termino la lista de notificadores vuelve a empezar
+                ultNot = 1
+            End If
+            'PONEMOS EL TECNICO SORTEADO
+            ultTec = ultTec + 1
+            'If siLicencia(fech, Worksheets("Tecnicos").Range("$B$" & ultTec).Value) Then
+            '    ActiveSheet.Range("$x" & celda.Row).Value = siLicencia(fech, Worksheets("Tecnicos").Range("$B$" & ultTec).Value)
+            'End If
+            ActiveSheet.Range("$Z" & celda.Row).Value = Worksheets("Personal").Range("$A$" & ultTec).Value
+            ActiveSheet.Range("$Z" & celda.Row).Font.Color = vbRed 'Letra roja
+            ActiveSheet.Range("$Z" & celda.Row).Font.Size = 12     'Tamaño 12
+            ActiveSheet.Range("$Z" & celda.Row).Font.Bold = True 'En negrita
+            'PONEMOS EL NOTIFICADOR SORTEADO
+            ultNot = ultNot + 1
+            ActiveSheet.Range("$AB" & celda.Row).Value = Worksheets("Personal").Range("$G$" & ultNot).Value
+            ActiveSheet.Range("$AB" & celda.Row).Font.Color = vbRed 'Letra roja
+            ActiveSheet.Range("$AB" & celda.Row).Font.Size = 12     'Tamaño 12
+            ActiveSheet.Range("$AB" & celda.Row).Font.Bold = True 'En negrita
+            'PONEMOS EL ASISTENTE SORTEADO
+            If respuesta = "S" Then
+                If ultAsi = 4 Then
+                ultAsi = 1
+                End If
+                'If ActiveSheet.Range("$L" & celda.Row).Value <> "UFINAR - Dr. Lopez Soto" Or ActiveSheet.Range("$L" & celda.Row).Value <> "UFINAR - Dr. Torres Rubelt, Gustavo" Then
+                'ActiveSheet.Range("$AC" & celda.Row).Value = InStr(1, ActiveSheet.Range("$L" & celda.Row).Value, "UFINAR")
+                If InStr(1, ActiveSheet.Range("$L" & celda.Row).Value, "UFINAR") = 0 Then
+                    ultAsi = ultAsi + 1
+                    ActiveSheet.Range("$AA" & celda.Row).Value = Worksheets("Personal").Range("$D$" & ultAsi).Value
+                    ActiveSheet.Range("$AA" & celda.Row).Font.Color = vbRed 'Letra roja
+                    ActiveSheet.Range("$AA" & celda.Row).Font.Size = 12     'Tamaño 12
+                    ActiveSheet.Range("$AA" & celda.Row).Font.Bold = True 'En negrita
+                End If
+            End If
+            
+        End If
+    Next celda
+    Worksheets("Personal").Range("B2").Value = Worksheets("Personal").Range("$A$" & ultTec).Value 'Guardamos el ultimo tecnico sorteado
+    Worksheets("Personal").Range("H2").Value = Worksheets("Personal").Range("$G$" & ultNot).Value 'Guardamos el ultimo notificador sorteado
+    
+    If respuesta = "S" Then
+        Worksheets("Personal").Range("E2").Value = Worksheets("Personal").Range("$D$" & ultAsi).Value 'Guardamos el ultimo asistente sorteado
+    End If
+End Sub
+
+
+'Boton actualizar tablas dinamicas
+Sub actuTablas()
+    Application.ScreenUpdating = False
+    
+    'Actualizamos rango de datos
+    Dim n As Integer
+    Dim g As Integer
+    Dim pt As PivotTable
+    n = ActiveWorkbook.Worksheets.Count
+    Dim ultfila As String
+    ultfila = "EXPEDIENTES!$D$2:$N$" & ultima
+    For g = 1 To n
+        For Each pt In ActiveWorkbook.Worksheets(g).PivotTables
+            pt.ChangePivotCache ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, SourceData:=ultfila)
+        Next pt
+    Next g
+    ActiveWorkbook.RefreshAll 'actualizamos datos
+End Sub
+
+
+'implementacion codigo licencias
+
+
+Sub calcularDias()
+    Set rgHoliDays = Worksheets("Feriados").Range("B:B") 'creamos el rango de feriados y se guarda en Hoja2
+    rgHoliDays(1, 1) = DateSerial(2023, 2, 20)
+    rgHoliDays(2, 1) = DateSerial(2023, 2, 21)
+    rgHoliDays(3, 1) = DateSerial(2023, 3, 24)
+    rgHoliDays(4, 1) = DateSerial(2023, 4, 6)
+    rgHoliDays(5, 1) = DateSerial(2023, 4, 7)
+    rgHoliDays(6, 1) = DateSerial(2023, 5, 25)
+    rgHoliDays(7, 1) = DateSerial(2023, 5, 26)
+    rgHoliDays(8, 1) = DateSerial(2023, 6, 19)
+    rgHoliDays(9, 1) = DateSerial(2023, 6, 20)
+    rgHoliDays(10, 1) = DateSerial(2023, 8, 21)
+    rgHoliDays(11, 1) = DateSerial(2023, 8, 29)
+    rgHoliDays(12, 1) = DateSerial(2023, 9, 13)
+    rgHoliDays(13, 1) = DateSerial(2023, 9, 14)
+    rgHoliDays(14, 1) = DateSerial(2023, 10, 13)
+    rgHoliDays(15, 1) = DateSerial(2023, 10, 16)
+    rgHoliDays(16, 1) = DateSerial(2023, 11, 17)
+    rgHoliDays(17, 1) = DateSerial(2023, 11, 20)
+    rgHoliDays(18, 1) = DateSerial(2023, 12, 8)
+    rgHoliDays(19, 1) = DateSerial(2023, 12, 25)
+
+ultColJuez = Cells(5, Columns.Count).End(xlToLeft).Offset(0, 0).Column
+ultColOFIJU = Cells(27, Columns.Count).End(xlToLeft).Offset(0, 0).Column
+
+'Debug.Print (ultColOFIJU)
+
+'ij = 7 'Donde empieza lista Jueces
+For juz = 1 To ultColJuez Step 3 'Jueces con 3 columnas c/u
+    For ij = 7 To 21
+        If Worksheets("Licencias").Cells(ij, juz + 1).Value <> "" And Worksheets("Licencias").Cells(ij, juz + 2).Value <> "" Then 'Si los campos de fechas no estan vacios
+        auxDiaIni = Worksheets("Licencias").Cells(ij, juz + 1).Value 'Pasamos a date las fechas
+        auxDiaFin = Worksheets("Licencias").Cells(ij, juz + 2).Value
+        auxDias = WorksheetFunction.NetworkDays(auxDiaIni, auxDiaFin, rgHoliDays) 'contamos los dias sin fines de semanas ni feriados
+        Worksheets("Licencias").Cells(ij, juz + 3).Value = auxDias
+        End If
+    Next
+Next
+
+'ij = 29 'Donde empeieza lista ofiju
+
+For juz = 1 To ultColOFIJU Step 3 'Funcionarios con 3 columnas c/u
+    For ij = 29 To 43
+        If Worksheets("Licencias").Cells(ij, juz + 1).Value <> "" And Worksheets("Licencias").Cells(ij, juz + 2).Value <> "" Then 'Si los campos de fechas no estan vacios
+        auxDiaIni = Worksheets("Licencias").Cells(ij, juz + 1).Value 'Pasamos a date las fechas
+        auxDiaFin = Worksheets("Licencias").Cells(ij, juz + 2).Value
+        auxDias = WorksheetFunction.NetworkDays(auxDiaIni, auxDiaFin, rgHoliDays) 'contamos los dias sin fines de semanas ni feriados
+        Worksheets("Licencias").Cells(ij, juz + 3).Value = auxDias
+        End If
+    Next
+Next
+
+End Sub
+
+Sub verificarLicencias()
+    Dim n As Integer
+    Dim auxFecha As String
+    Dim miArray(10) As String 'lista de tamaño 10
+    ultColJuez = Worksheets("Licencias").Cells(6, Columns.Count).End(xlToLeft).Column
+    ultColOFIJU = Worksheets("Licencias").Cells(28, Columns.Count).End(xlToLeft).Column
+    Dim tamArray As Integer
+    Dim dateIni As Date
+    Dim dateFin As Date
+    'Debug.Print "ultima columna juez:  " & ultColJuez
+    'Debug.Print "ultima columna OFIJU:  " & ultColOFIJU
+    'ultima = Range("A" & Rows.Count).End(xlUp).Row
+    
+    
+    For n = 2 To 17 Step 3 ' aqui va hasta la cantidad de tablas dinamicas que hay
+        'Limpiamos el area de licencias
+        'Call borrarFilDeCol(6, Worksheets("Informe Disponibilidad").Cells(Rows.Count, n).End(xlUp).Row, n)
+        Call borrarFilDeCol(6, 15, n)
+        '''''''''''''''
+        auxFecha = Worksheets("Informe Disponibilidad").Cells(5, n).Value 'Guardamos la fecha filtro de la tabla
+        If auxFecha <> "(Todas)" Then
+            miArray(1) = "Licencias"
+            tamArray = 1
+            For juz = 1 To ultColJuez Step 3 'Jueces con 3 columnas c/u
+                For ij = 7 To 21
+                    dateIni = CDate(Worksheets("Licencias").Cells(ij, juz + 1).Value) 'Nos aseguramos q fecha ini y fin sean de tipo Date
+                    If IsDate(Worksheets("Licencias").Cells(ij, juz + 2).Value) Then
+                        dateFin = Worksheets("Licencias").Cells(ij, juz + 2).Value
+                    Else
+                        dateFin = CDate(Worksheets("Licencias").Cells(ij, juz + 2).Value)
+                    End If
+            
+                    'If Worksheets("Licencias").Cells(ij, juz + 1).Value <> "" Then
+                    '    Debug.Print "no facia fecha ini: " & Worksheets("Licencias").Cells(ij, juz + 1).Value
+                    'End If
+                    'If Worksheets("Licencias").Cells(ij, juz + 2).Value <> "" Then
+                    '    Debug.Print "no facia fecha fin: " & Worksheets("Licencias").Cells(ij, juz + 2).Value
+                    'End If
+                    If Worksheets("Licencias").Cells(ij, juz + 1).Value <> "" And Worksheets("Licencias").Cells(ij, juz + 2).Value <> "" Then 'Si los campos de fechas no estan vacios
+                        'Debug.Print "Detecto celda : Fila " & ij & " Columna " & juz + 1
+                        If siFechaEsta(dateIni, dateFin, auxFecha) Then
+                            tamArray = tamArray + 1
+                            miArray(tamArray) = Worksheets("Licencias").Cells(5, juz + 1).Value
+                        End If
+                    End If
+                Next
+            Next
+            For juz = 1 To ultColOFIJU Step 3 'Funcionarios con 3 columnas c/u
+                For ij = 29 To 43
+                    dateIni = CDate(Worksheets("Licencias").Cells(ij, juz + 1).Value)
+                    dateFin = Worksheets("Licencias").Cells(ij, juz + 2).Value
+            
+                If Worksheets("Licencias").Cells(ij, juz + 1).Value <> "" Then
+                    'Debug.Print "no facia fecha ini: " & Worksheets("Licencias").Cells(ij, juz + 1).Value
+                End If
+                If Worksheets("Licencias").Cells(ij, juz + 2).Value <> "" Then
+                    'Debug.Print "no facia fecha fin: " & Worksheets("Licencias").Cells(ij, juz + 2).Value
+                End If
+                If Worksheets("Licencias").Cells(ij, juz + 1).Value <> "" And Worksheets("Licencias").Cells(ij, juz + 2).Value <> "" Then  'Si los campos de fechas no estan vacios
+                    'Debug.Print "Detecto celda : Fila " & ij & " Columna " & juz + 1
+                    If siFechaEsta(dateIni, dateFin, auxFecha) Then
+                        tamArray = tamArray + 1
+                        miArray(tamArray) = Worksheets("Licencias").Cells(27, juz + 1).Value
+                    End If
+                End If
+            Next
+        Next
+        If tamArray > 1 Then
+            For ij = 1 To tamArray
+                Worksheets("Informe Disponibilidad").Cells(5 + ij, n).Value = miArray(ij) 'Mostrar licencias
+            Next
+        End If
+        If tamArray > 1 Then
+            For ij = 2 To tamArray
+                miArray(ij) = "" 'Borrar el array
+            Next
+        End If
+            
+        End If
+        
+        'Verificamos disponibilidad de audiencistas
+        'Call borrarFilDeCol(16, 27, n) 'Borramos listas anteriores
+        'Call disponibilidadAudiencistas(n)
+        
+    Next
+        'Call borrarFilDeCol(16, 27, 2)
+        'Call disponibilidadAudiencistas(2)
+
+    
+End Sub
+
+
+'Function siFechaEsta(inicial As Date, finali As Date, fechabuscar As String) '
+    'Dim asd1 As Date
+    'asd1 = Worksheets("Licencias").Cells(7, 8).Value
+    'Dim asd2 As Date
+    'asd2 = Worksheets("Licencias").Cells(7, 9).Value
+    
+ '   Dim slll As String
+ '   slll = CStr(fechabuscar)
+ '   Dim lll As Date
+    'Debug.Print (VarType(slll) & " slll")
+    'Debug.Print (VarType(fechabuscar) & "fechabuscarl")
+    'Debug.Print (VarType(lll) & "lll")
+    'Debug.Print (VarType(CDate(slll)) & "CDate(slll)")
+ '   lll = CDate(slll)
+    
+    'Debug.Print "INI: " & inicial & "FIN: " & finali & "fecha: " & lll
+    'Debug.Print IsDate(inicial) & " ... " & IsDate(finali) & " ... " & IsDate(lll)
+ '   If (lll >= inicial And lll <= finali) Then
+ '       siFechaEsta = True
+        'Debug.Print True
+ '   Else
+ '       siFechaEsta = False
+        'Debug.Print False
+ '   End If
+'End Function
+Function siFechaEsta(inicial As Date, finali As Date, fechabuscar As String) '
+    'Dim asd1 As Date
+    'asd1 = Worksheets("Licencias").Cells(7, 8).Value
+    'Dim asd2 As Date
+    'asd2 = Worksheets("Licencias").Cells(7, 9).Value
+    
+    Dim slll As String
+    slll = CStr(fechabuscar)
+    Dim lll As Date
+    'Debug.Print (VarType(slll) & " slll")
+    'Debug.Print (VarType(fechabuscar) & "fechabuscarl")
+    'Debug.Print (VarType(lll) & "lll")
+    'Debug.Print (VarType(CDate(slll)) & "CDate(slll)")
+    
+    lll = CDate(slll)
+    'Debug.Print "INI: " & inicial & "FIN: " & finali & "fecha: " & lll
+    'Debug.Print IsDate(inicial) & " ... " & IsDate(finali) & " ... " & IsDate(lll)
+    If (lll >= inicial And lll <= finali) Then
+        siFechaEsta = True
+        'Debug.Print True
+    Else
+        siFechaEsta = False
+        'Debug.Print False
+    End If
+End Function
+
+Sub borrarFilDeCol(empieza As Integer, finaliza As Integer, columnilla As Integer)
+    Dim ik As Integer
+    For ik = empieza To finaliza
+        Worksheets("Informe Disponibilidad").Cells(ik, columnilla).Value = ""
+    Next
+End Sub
+
+Sub ActuAg()
+' Actualiza datos de la agenda diaria.-
+    
+    ' control de errores y evitar parpadeo de pantalla
+    On Error Resume Next
+    Application.ScreenUpdating = False
+    
+    Sheets("EXPEDIENTES").Select        ' Cambia a planilla principal
+    Call MostrarTodas                   ' muestra todos los registros
+    Call OrdFecHor                      ' ordena por fecha y hora de la audiencia
+        
+    Application.CutCopyMode = False     ' copia los registros - todos hasta el final
+    Range("D3:M3").Select
+    Range(Selection, Selection.End(xlDown)).Select
+    Selection.Copy
+    
+    Sheets("AUXAG").Select              ' pasa a la planilla auxiliar de la agenda
+    Range("C2").Select                  ' copia los registros
+    ActiveSheet.Paste
+    Range("C2").Select
+        
+    
+    Sheets("EXPEDIENTES").Select        ' Cambia a planilla principal nuevamente para desmarcar los registros
+    Call IrAUltima
+        
+    Sheets("AGENDA").Select             ' vuelve a la agenda
+    Range("C2:C11").Select              ' acomoda alto de celdas
+    Selection.Rows.AutoFit
+    SendKeys ("^{HOME}")
+    
+    Application.ScreenUpdating = True   ' rehabilita actualización de la pantalla
+    
+End Sub
+
+Sub juzOrigenPorFecha()
+    ' filtra por fecha de pedido de resolucion y por juzgado original
+    Dim dDateIni As Date
+    Dim lDateIni As Long
+    Dim dDateFin As Date
+    Dim lDateFin As Long
+    Dim sDateFin As String
+    Dim sDateIni As String
+    
+    Dim juzOri As String
+    juzOri = InputBox("Ingrese Juzgado de Origen :")
+    
+    Application.ScreenUpdating = False
+      
+    Call SacarFiltro
+    ' Call ultimaf       ' 12-06-2023
+    
+    sDateIni = InputBox("Ingrese desde que fecha : (dd/mm/aaaa)") 'aqui poner la fecha ingresada
+    dDateIni = sDateIni
+    lDateIni = dDateIni
+    
+    sDateFin = InputBox("Ingrese hasta que fecha: (dd/mm/aaaa) - vacio si es hasta HOY")
+    
+    Range("A2:" & ucvisib & ultima).Select
+    Selection.AutoFilter
+    ActiveSheet.Range("A$2:" & ucvisib & ultima).AutoFilter Field:=6, Criteria1:=juzOri
+    'ActiveSheet.Range("A$2:" & ucvisib & ultima).AutoFilter Field:=2, Criteria1:=">=" & lDateIni
+    If sDateFin = "" Then
+        ActiveSheet.Range("A$2:" & ucvisib & ultima).AutoFilter Field:=2, Criteria1:=">=" & lDateIni
+    Else
+        dDateFin = sDateFin
+        lDateFin = dDateFin
+        ActiveSheet.Range("A$2:" & ucvisib & ultima).AutoFilter Field:=2, Criteria1:=">=" & lDateIni, Criteria2:="<=" & lDateFin
+    End If
+    
+    Call InsertarCuadroDeTexto
+    
+    'Creamos el pdf
+    Call OcFila1
+    Call OcultarRY
+    Range("Q:Q").EntireColumn.Hidden = True
+    Dim nomJuzOri As String
+    nomJuzOri = "\\scompar\Compartido - OFIJUZ\informes\Originales" & juzOri & "-" & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+    
+    'ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomJuzOri, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomJuzOri, Quality:=xlQualityMinimum, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    'ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:="Originales" & juzOri, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+    'ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:="Originales"
+  
+    'Eliminamos el cuadro de texto
+    
+    'Call OcultarABC
+    
+    'Mostramos todas de nuevo
+    Call VerFila1
+    Call MostrarRY
+    '
+    'Call MostrarTodas
+    Call EliminarCuadroTexto
+    
+    Range("A" & ultima).Select
+End Sub
+
+Sub InsertarCuadroDeTexto()
+    
+    'Calculamos pendientes, realizadas y totales filtrados
+    Dim cc As Range
+    Dim rrr As Range
+    Dim p As Integer 'Contador de pendientes filtrados
+    Dim h As Integer 'Contador de hechas filtrados
+    
+    p = 0
+    h = 0
+    
+    Range("O:O").Select 'Mostramos la columna o
+    Selection.EntireColumn.Hidden = False
+    
+    Set rrr = ActiveSheet.Range("O:O") 'Definimos la columna qe vamos recorrer
+    'Recorremos ese rango y cotamos realizadas, pendientes y por asignar
+    For Each cc In rrr.SpecialCells(xlCellTypeVisible)
+        If cc = "SI" Then
+            h = h + 1
+        Else
+            If cc = "NO" Or cc = "LIMBO" Then
+                p = p + 1
+            End If
+        End If
+    Next cc
+
+    Dim lastRow As Long 'Variable para la ultima posición
+    'lastRow = Cells(Rows.Count, 1).End(xlUp).Row
+    lastRow = Range("A" & Rows.Count).End(xlUp).Row
+    
+    ' Inserta un cuadro de texto en la hoja activa
+    'Range.Top tira dado ese range la distancia desde arriba hasta la ultima fila en PUNTOS
+    Set CuadroTexto = ActiveSheet.Shapes.AddTextbox(msoTextOrientationHorizontal, 20, Range("A" & lastRow + 3).Top, Width:=200, Height:=100)
+    ' Especifica la posición y el tamaño del cuadro de texto
+    
+    With CuadroTexto.TextFrame
+        .Characters.Text = "REALIZADAS:  " & h & vbCrLf & "RESTANTES: " & p & vbCrLf & "TOTALES: " & (p + h)
+        .HorizontalAlignment = xlHAlignLeft
+        .VerticalAlignment = xlVAlignCenter
+    End With
+    
+    Range("O:O").Select 'Ocultamos la columna O de nuevo
+    Selection.EntireColumn.Hidden = True
+
+End Sub
+
+Sub EliminarCuadroTexto()
+    ' CuadroTexto.Delete
+End Sub
+
+Sub DeleteRows_EntireRowBlank()
+ 
+Dim celda As Range
+ 
+For Each celda In Range("B2:B500000")
+    If Application.WorksheetFunction.CountA(celda.EntireRow) = 0 Then
+        celda.EntireRow.Delete
+    End If
+Next celda
+ 
+End Sub
+
+Sub Convertir_texto()
+
+Dim Opcion As Variant
+Dim Texto As String
+Dim Rango As Range
+
+Set Rango = ActiveCell
+
+
+Texto = "Elige una opción:" & vbNewLine & _
+        vbNewLine & "1. MAYÚSCULAS" & _
+        vbNewLine & "2. minúsculas"
+        
+Opcion = InputBox(Texto, "Mayuscula o Minuscula", 1)
+
+Select Case Opcion
+    Case 1
+        Rango.Value = VBA.UCase(Rango.Value)
+    Case 2
+        Rango.Value = VBA.LCase(Rango.Value)
+    Case Else
+        MsgBox "Debes elegir una opción válida", vbExclamation, "EXCELeINFO"
+End Select
+
+End Sub
+
+Sub PreInfDisp()
+
+    Range("A1").Select
+    Range(Selection, Selection.End(xlToRight)).Select
+    Range(Selection, Selection.End(xlDown)).Select
+    Range("A1:L1500").Select
+    ActiveWorkbook.Worksheets("AUXAG (2)").Sort.SortFields.Clear
+    ActiveWorkbook.Worksheets("AUXAG (2)").Sort.SortFields.Add Key:=Range( _
+        "I2:I1500"), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortNormal
+    ActiveWorkbook.Worksheets("AUXAG (2)").Sort.SortFields.Add Key:=Range( _
+        "G2:G1500"), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortNormal
+    ActiveWorkbook.Worksheets("AUXAG (2)").Sort.SortFields.Add Key:=Range( _
+        "H2:H1500"), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortNormal
+    ActiveWorkbook.Worksheets("AUXAG (2)").Sort.SortFields.Add Key:=Range( _
+        "J2:J1500"), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortNormal
+    With ActiveWorkbook.Worksheets("AUXAG (2)").Sort
+        .SetRange Range("A1:L1500")
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+End Sub
+
+Sub generarBackup()
+    Dim NombreArchivo, Separador, RutaArchivo
+    Dim bakCarpeta1, bakCarpeta2, Ruta1, Ruta2
+
+    NombreArchivo = Application.ThisWorkbook.Name
+    Separador = Application.PathSeparator
+    RutaArchivo = Application.ThisWorkbook.Path
+
+    bakCarpeta1 = "bak_" & NombreArchivo
+    bakCarpeta2 = VBA.Format(VBA.Now, "dd-mm-yyyy-hh-mm-ss")
+
+    Ruta1 = RutaArchivo & Separador & bakCarpeta1
+    Ruta2 = RutaArchivo & Separador & bakCarpeta1 & Separador & bakCarpeta2
+
+    If Dir(Ruta1, vbDirectory) <> Empty Then
+        'Carpeta existe
+        VBA.MkDir (Ruta2)
+    Else
+        'Carpeta no existe
+        VBA.MkDir (Ruta1)
+        VBA.MkDir (Ruta2)
+    End If
+
+    Application.ThisWorkbook.SaveCopyAs Ruta2 & Separador & NombreArchivo
+End Sub
+
+'Sub InsertarCuadroDeTexto()
+'
+'
+'    'Calculamos pendientes, realizadas y totales filtrados
+'    Dim cc As Range
+'    Dim rrr As Range
+'    Dim p As Integer 'Contador de pendientes filtrados
+'    Dim h As Integer 'Contador de hechas filtrados
+'
+'    p = 0
+'    h = 0
+'
+'    Range("O:O").Select 'Mostramos la columna o
+'    Selection.EntireColumn.Hidden = False
+'
+'    Set rrr = ActiveSheet.Range("O:O") 'Definimos la columna qe vamos recorrer
+'    'Recorremos ese rango y cotamos realizadas, pendientes y por asignar
+'    For Each cc In rrr.SpecialCells(xlCellTypeVisible)
+'        If cc = "SI" Then
+'            h = h + 1
+'        Else
+'            If cc = "NO" Or cc = "LIMBO" Then
+'                p = p + 1
+'            End If
+'        End If
+'    Next cc
+'
+'    Dim lastRow As Long 'Variable para la ultima posición
+'    'lastRow = Cells(Rows.Count, 1).End(xlUp).Row
+'    lastRow = Range("A" & Rows.Count).End(xlUp).Row
+'
+'    ' Inserta un cuadro de texto en la hoja activa
+'    'Range.Top tira dado ese range la distancia desde arriba hasta la ultima fila en PUNTOS
+'    Set CuadroTexto = ActiveSheet.Shapes.AddTextbox(msoTextOrientationHorizontal, 20, Range("A" & lastRow + 3).Top, Width:=200, Height:=100)
+'    ' Especifica la posición y el tamaño del cuadro de texto
+'
+'    With CuadroTexto.TextFrame
+'        .Characters.Text = "REALIZADAS:  " & h & vbCrLf & "RESTANTES: " & p & vbCrLf & "TOTALES: " & (p + h)
+'        .HorizontalAlignment = xlHAlignLeft
+'        .VerticalAlignment = xlVAlignCenter
+'    End With
+'
+'    Range("O:O").Select 'Ocultamos la columna O de nuevo
+'    Selection.EntireColumn.Hidden = True
+'
+'End Sub
+
+Sub InfoMesa()
+    ' filtra por fecha para informe diario a mesa de entradas
+    
+    Dim sDateIni As String
+           
+    Application.ScreenUpdating = False
+    Call SacarFiltro
+        
+    sDateIni = InputBox("Ingrese fecha: (dd/mm/aaaa)") 'aqui poner la fecha ingresada
+        
+    Range("A3:" & ucvisib & ultima).Select
+    Selection.AutoFilter
+    ActiveSheet.Range("A$2:" & ucvisib & ultima).AutoFilter Field:=8, Criteria1:="=" & sDateIni
+    
+    ' oculto filas que no deben salir
+    Call OcFila1
+    Call OcultarABC
+    Range("F:F").EntireColumn.Hidden = True
+    Range("L:L").EntireColumn.Hidden = True
+    Range("M:Z").EntireColumn.Hidden = True
+    Range("AB:AB").EntireColumn.Hidden = True
+    
+       
+    Range("A3:" & ucvisib & ultima).Select   ' cambiar tamaño de letra para esta selecccion
+    With Selection.Font
+        .Name = "Arial"
+        .Size = 16
+    End With
+    
+    Range("A3:" & ucvisib & ultima).Select           ' acomoda alto de celdas
+    Selection.Rows.AutoFit
+    
+    
+    Range("D3").ColumnWidth = 30    ' Ancho columnas que se imprimen
+    Range("E3").ColumnWidth = 75
+    Range("G3").ColumnWidth = 35
+    Range("H3").ColumnWidth = 17
+    Range("I3").ColumnWidth = 16
+    Range("J3").ColumnWidth = 27
+    Range("K3").ColumnWidth = 17
+    Range("AA3").ColumnWidth = 28
+    
+    Dim nomsalida As String
+
+    nomsalida = "\\scompar\Compartido - OFIJUZ\informes\InfoMesa " & Day(Date) & "-" & Month(Date) & "-" & Year(Date) & ".pdf"
+    
+    ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=nomsalida, Quality:=xlQualityMinimum, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+        
+    'Mostramos todas de nuevo
+    Call VerFila1
+    Call MostrarRY
+    Call MostrarTodas
+    Call EliminarCuadroTexto
+        
+    Range("A3:AB1000").Select       ' cambiar tamaño de letra para esta selecccion
+    With Selection.Font
+        .Name = "Arial"
+        .Size = 10
+    End With
+    
+    Range("D3").ColumnWidth = 9.71    ' Ancho columnas que se imprimen
+    Range("E3").ColumnWidth = 34.43
+    Range("G3").ColumnWidth = 14.43
+    Range("H3").ColumnWidth = 12.57
+    Range("I3").ColumnWidth = 10.14
+    Range("J3").ColumnWidth = 17.57
+    Range("K3").ColumnWidth = 10.29
+    Range("AA3").ColumnWidth = 18
+    
+    Range("A" & ultima).Select
+
+End Sub
+
+Sub disponibilidadAudiencistas(inic As Integer)
+    Dim audiencistas(12) As String
+    audiencistas(1) = "Lamas"
+    audiencistas(2) = "Cervantes"
+    audiencistas(3) = "Nallim"
+    audiencistas(4) = "Volante"
+    audiencistas(5) = "Chanchorra"
+    audiencistas(6) = "Pedraza"
+    audiencistas(7) = "Nieva"
+    audiencistas(8) = "Irazusta"
+    audiencistas(9) = "Navarro"
+    audiencistas(10) = "Soto"
+    audiencistas(11) = "Gonzalez"
+    audiencistas(12) = "Rodriguez"
+    
+    Dim audiencistasCompleto(12) As String
+    audiencistasCompleto(1) = "Dra. Lamas"
+    audiencistasCompleto(2) = "Dr.cervantes"
+    audiencistasCompleto(3) = "Dra.nallim"
+    audiencistasCompleto(4) = "Dra.volante"
+    audiencistasCompleto(5) = "Dra.chanchorra"
+    audiencistasCompleto(6) = "Dra.Pedraza"
+    audiencistasCompleto(7) = "Dr.Nieva"
+    audiencistasCompleto(8) = "Dra.Ana Irazusta"
+    audiencistasCompleto(9) = "Dra.Laura Navarro"
+    audiencistasCompleto(10) = "Dra.Cecilia Soto"
+    audiencistasCompleto(11) = "Dra.Florencia Gonzalez"
+    audiencistasCompleto(12) = "Dr.Rodriguez Diego"
+
+    
+    Dim contador As Integer
+    contador = 0
+    Dim bandera As Boolean
+    
+    
+    Cells(9, inic - 1).Select 'selecciona desde donde inicia los audiencistas ya asignados en la tabla dinamica del dia elegido
+    Dim i As Integer
+    i = 1
+    For i = 1 To 12
+        Debug.Print (audiencistasCompleto(i))
+        bandera = False
+        Do Until IsEmpty(ActiveCell) 'Recorre hasta el final de la tabla dinamica
+            'Debug.Print ("Paso por aqui")
+            'Debug.Print (ActiveCell.Value)
+            'Debug.Print (audiencistasCompleto(i))
+            
+            'Debug.Print (" celda activa" & ActiveCell.Value & " audiencista " & audiencistasCompleto(i) & " resultado logico " & audiencistasCompleto(i) = ActiveCell.Value)
+            If audiencistasCompleto(i) = ActiveCell.Value Then 'Verificamos si esta el audiencista ocupado
+                bandera = True
+            End If
+            ActiveCell.Offset(1, 0).Select 'Para salir del loop (?
+        Loop
+        If bandera = False Then
+            Cells(16 + contador, inic).Value = audiencistas(i) 'si no esta ocupado lo escribimos como dispoible
+            contador = contador + 1
+        End If
+        Debug.Print (i)
+    Next i
+End Sub
+
+Sub Validante()
+
+    ' Sub para validaciones de las columnas que corresponden - para el momento de importar el registro de las planilla de control de acusación
+
+    Application.ScreenUpdating = False
+    
+    ' inserta validación de datos en la columna G
+    Range("G3").Copy
+    Range("$G" & ultimc).PasteSpecial xlPasteValidation
+
+    Application.CutCopyMode = False
+
+    ' inserta validación de datos en la columna J
+    Range("J3").Copy
+    Range("$J" & ultimc).PasteSpecial xlPasteValidation
+
+    Application.CutCopyMode = False
+
+    ' Columna de búsqueda de sala de audiencia
+    Range("K3").Copy
+    Range("$K" & ultimc).PasteSpecial xlPasteFormulas
+    Application.CutCopyMode = False
+
+    ' columnas l y m, lista desplegable de fiscalia y defensa
+    Range("$L$3:$M$3").Select
+    Selection.Copy
+    Range("$L" & ultimc).Select
+    ActiveSheet.Paste
+    Application.CutCopyMode = False
+
+    Range("$L" & ultimc).Select
+    Selection.ClearContents
+
+    Range("$M" & ultimc).Select
+    Selection.ClearContents
+
+    ' columnas o y p (ocultas) que llevan la cuenta de si la audiencia esta hecha (segun si tiene fecha de hoy o no) y si es una fecha solicitada por la consulta según fecha
+    Range("$O$3:$P$3").Select
+    Selection.Copy
+    Range("$O" & ultimc).Select
+    ActiveSheet.Paste
+    Application.CutCopyMode = False
+
+    ' columna t (oculta) para botón de interno de la ofiju (SI o NO)
+    Range("$T$3").Select
+    Selection.Copy
+    Range("$T" & ultimc).Select
+    ActiveSheet.Paste
+    Application.CutCopyMode = False
+
+    ' agrega el guion a la columna Q cuando se agrega un registro
+    Range("$Q$" & ultimc).Value = " _"
+
+    'agrega columna R con su formula
+    Range("R3").Select
+    Selection.Copy
+    Range("$R" & ultimc).Select
+    ActiveSheet.Paste
+    Application.CutCopyMode = False
+
+    ' recuadrar todo
+    Range("A" & ultima & ":" & ucvisib & ultima).Select
+    With Selection.Interior
+        .Pattern = xlNone
+        .TintAndShade = 0
+        .PatternTintAndShade = 0
+    End With
+
+    Selection.Borders(xlDiagonalDown).LineStyle = xlNone
+    Selection.Borders(xlDiagonalUp).LineStyle = xlNone
+
+    With Selection.Borders(xlEdgeLeft)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeBottom)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeRight)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlInsideVertical)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlInsideHorizontal)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+
+    Application.ScreenUpdating = True
+
+    Range("A" & ultima).Select
+    Selection.RowHeight = 40
+End Sub
+Sub reprogramarAud()
+    'Dim celdasACopiar
+    Dim nExp As String
+    Call cargafilcol
+
+    
+    On Error Resume Next
+    
+    nExp = Cells(nrofila, 4)
+    Dim Pregunta As String
+    
+    
+    If Range("B" & nrofila).Value = "" Then 'Si esta vacio la fila seleccionada avisa y no permite reprogramar
+        MsgBox ("Seleccione fila NO vacia")
+    Else
+        Pregunta = MsgBox("Esta por reprogramar la audiencia Expte:  " & nExp, vbYesNo + vbQuestion, "Reprogramar Audiencia")
+        If Pregunta = vbNo Then
+    
+            MsgBox "Elegiste No"
+        'Macros
+        Else
+            Call Ultimamas1 'Agrego una fila nueva como nueva audiencia para pegar los datos de la audiencia reprogramadA
+            Range("A" & nrofila & ":" & ucvisib & nrofila).Select 'selecciona el área de datos
+            Dim celdasConListas(8) As String 'CELDAS QUE VOY A COPIAR VALORES
+            celdasConListas(1) = "B" '
+            celdasConListas(2) = "C" '
+            celdasConListas(3) = "D" '
+            celdasConListas(4) = "E" '
+            celdasConListas(5) = "F" '
+            celdasConListas(6) = "L" '
+            celdasConListas(7) = "M" '
+            celdasConListas(8) = "N" '
+            'celdasConListas(9) = "W" '
+            'celdasConListas(10) = "X" '
+            'celdasConListas(11) = "AA" '
+            'celdasConListas(12) = "AD" '
+            'celdasConListas(13) = "S" '
+            'celdasConListas(14) = "T" '
+            'celdasConListas(15) = "U" '
+            'celdasConListas(16) = "AI" '
+            'celdasConListas(17) = "AE" '
+            'celdasConListas(18) = "F" '
+            
+            Worksheets("EXPEDIENTES").Range("C" & ultima).NumberFormat = "hh:mm"
+            Worksheets("EXPEDIENTES").Range("H" & ultima).NumberFormat = "dd/mm/aaaa"
+            
+            For Each cel In celdasConListas
+                Range(cel & ultima).Value = Range(cel & nrofila)
+            Next cel
+            
+            Range("B" & nrofila).Value = ""
+        End If
+        Call IrAUltima
+    End If
+    
+    
+End Sub
+
+
+Sub mostrarUnExp() 'Filtra un expte y si tiene audiencias reprogramadas
+    On Error Resume Next
+    numexp = 0
+    Call SacarFiltro
+    numexp = InputBox("Ingrese Expediente: ")
+    numexp = "*" & numexp & "*"
+    'Cells.Find(What:=numexp, After:=ActiveCell, LookIn:=xlFormulas, LookAt:=xlPart, SearchOrder:=xlByRows, SearchDirection:=xlNext, MatchCase:=False, SearchFormat:=False).Activate
+    Range("A2:" & ucvisib & ultima).Select
+    Selection.AutoFilter
+    ActiveSheet.Range("$A$2:$" & ucvisib & ultima).AutoFilter Field:=4, Criteria1:=numexp
+    ActiveWorkbook.Worksheets("EXPEDIENTES").Sort.SortFields.Add Key:=Range("H3:H" & ultima), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortTextAsNumbers
+    ActiveWorkbook.Worksheets("EXPEDIENTES").Sort.SortFields.Add Key:=Range("I3:I" & ultima), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortTextAsNumbers
+    
+    Range("A3").Select
+    
+End Sub
+Sub contarDias()
+    Dim ii As Integer
+    Dim contadors As Integer
+    Dim sumatoria As Double
+    Dim sDateI As String
+    Dim dDateI As Date
+    Dim sDateF As String
+    Dim dDateF As Date
+    Dim sDateA As String
+    
+    Set rgHoliDays = Worksheets("Feriados").Range("B:B") 'creamos el rango de feriados y se guarda en Hoja2
+    rgHoliDays(1, 1) = DateSerial(2023, 2, 20)
+    rgHoliDays(2, 1) = DateSerial(2023, 2, 21)
+    rgHoliDays(3, 1) = DateSerial(2023, 3, 24)
+    rgHoliDays(4, 1) = DateSerial(2023, 4, 6)
+    rgHoliDays(5, 1) = DateSerial(2023, 4, 7)
+    rgHoliDays(6, 1) = DateSerial(2023, 5, 25)
+    rgHoliDays(7, 1) = DateSerial(2023, 5, 26)
+    rgHoliDays(8, 1) = DateSerial(2023, 6, 19)
+    rgHoliDays(9, 1) = DateSerial(2023, 6, 20)
+    rgHoliDays(10, 1) = DateSerial(2023, 8, 21)
+    rgHoliDays(11, 1) = DateSerial(2023, 8, 29)
+    rgHoliDays(12, 1) = DateSerial(2023, 9, 13)
+    rgHoliDays(13, 1) = DateSerial(2023, 9, 14)
+    rgHoliDays(14, 1) = DateSerial(2023, 10, 13)
+    rgHoliDays(15, 1) = DateSerial(2023, 10, 16)
+    rgHoliDays(16, 1) = DateSerial(2023, 11, 16)
+    rgHoliDays(17, 1) = DateSerial(2023, 11, 20)
+    rgHoliDays(18, 1) = DateSerial(2023, 12, 8)
+    rgHoliDays(19, 1) = DateSerial(2023, 12, 25)
+    
+    
+    
+ultColJuez = Cells(5, Columns.Count).End(xlToLeft).Offset(0, 0).Column
+ultColOFIJU = Cells(27, Columns.Count).End(xlToLeft).Offset(0, 0).Column
+
+
+contadors = 0
+Call ultimaf
+Workbooks("PLCGar.xlsm").Worksheets("Informe de Gestión").Activate
+Range("G1").Select
+
+    sDateI = InputBox("Ingrese desde que fecha: (dd/mm/aaaa)") '
+    dDateI = CDate(sDateI)
+    
+    sDateF = InputBox("Ingrese hasta que fecha: (dd/mm/aaaa)")
+    dDateF = CDate(sDateF)
+
+    
+
+For ii = 3 To ultima
+        If Worksheets("EXPEDIENTES").Cells(ii, 2).Value <> "" And Worksheets("EXPEDIENTES").Cells(ii, 8).Value <> "" Then 'Si los campos de fechas no estan vacios
+            sDateA = Worksheets("EXPEDIENTES").Cells(ii, 2).Value
+            Debug.Print (sDateA)
+            Debug.Print (Worksheets("EXPEDIENTES").Cells(ii, 1).Value)
+            If siFechaEsta(dDateI, dDateF, sDateA) Then
+                Debug.Print (Worksheets("EXPEDIENTES").Cells(ii, 2).Value)
+                auxDiaIni = Worksheets("EXPEDIENTES").Cells(ii, 2).Value
+                Debug.Print (Worksheets("EXPEDIENTES").Cells(ii, 8).Value)
+                auxDiaFin = Worksheets("EXPEDIENTES").Cells(ii, 8).Value
+                auxDias = WorksheetFunction.NetworkDays(auxDiaIni, auxDiaFin, rgHoliDays) - 1 'contamos los dias sin fines de semanas ni feriados restamos porque no contamos el dia que llego
+                sumatoria = sumatoria + auxDias
+                'Debug.Print (ii)
+                contadors = contadors + 1
+            End If
+        End If
+Next
+Dim resu As Integer
+resu = sumatoria / contadors
+Worksheets("Informe de Gestión").Cells(1, 7).Value = resu
+
+End Sub
+
+Sub MostrarEnBusqueda()
+    ' Muestra audiencias pendientes de realizaciòn - incluye desde el día siguiente a la fecha
+    
+    Application.ScreenUpdating = False
+    
+    Call SacarFiltro
+    ' Call ultimaf     ' 12-06-2023
+    Range("A2:" & ucvisib & ultima).AutoFilter
+    ActiveSheet.Range("$A$2:$" & ucvisib & ultima).AutoFilter Field:=1, Criteria1:=RGB(146, 208, 80), Operator:=xlFilterCellColor
+    
+    Application.ScreenUpdating = True
+    
+    Range("A" & ultima).Select
+  
+End Sub
+Sub numerarOrden()
+    Dim ix As Integer
+    For ix = 530 To 1137
+        Range("A" & ix).Value = ix - 2
+    Next
+End Sub
